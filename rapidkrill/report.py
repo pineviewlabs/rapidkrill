@@ -26,6 +26,27 @@ register_matplotlib_converters()
 logger = logging.getLogger()
 logging.config.fileConfig(os.path.join(os.path.dirname(__file__),
                                        '..','rapidkrill','logging.conf'))
+def get_results(pro):
+    # Load processed data variables
+    transect    = pro['transect']
+    t120r       = pro['t120r']
+    t120intrvls = pro['t120intervals']
+    nm120r      = pro['nm120r']
+    lon120r     = pro['lon120r']
+    lat120r     = pro['lat120r']
+    sbline120r  = pro['sbliner'][0,:]
+    NASC120swr  = pro['NASC120swr'][0,:]
+    pc120swr    = pro['pc120swr'][0,:]
+
+    # Build summary results
+    return {'Time': np.array(t120r, dtype=str),
+           'Longitude': np.round(lon120r, 5),
+           'Latitude': np.round(lat120r, 5),
+           'Transect': np.ones(len(t120r), dtype=int)*transect,
+           'Miles': nm120r,
+           'Seabed': np.round(sbline120r , 1),
+           'NASC': np.round(NASC120swr, 2),
+           '% samples': np.round(pc120swr,1)}
 
 def log(pro, outputdir, savepng=True):
     """
@@ -37,35 +58,11 @@ def log(pro, outputdir, savepng=True):
         savepng   (bool): True to save echogram images, False to skip it.
     """
 
-    # Load processed data variables
-    rawfiles    = pro['rawfiles']
-    transect    = pro['transect']
-    t120        = pro['t120'    ]
-    r120        = pro['r120'    ]
-    Sv120       = pro['Sv120'   ]
-    Sv120sw     = pro['Sv120sw' ]
-    t120r       = pro['t120r'   ]
-    t120intrvls = pro['t120intervals']
-    nm120r      = pro['nm120r'  ]
-    lon120r     = pro['lon120r' ]
-    lat120r     = pro['lat120r' ]
-    sbline120r  = pro['sbliner' ][0,:]
-    NASC120swr  = pro['NASC120swr'][0,:]
-    pc120swr    = pro['pc120swr'][0,:]
-
-    # Build summary results
-    results = {'Time'     : np.array(t120r      , dtype=str)         ,
-               'Longitude': np.round(lon120r    , 5)                 ,
-               'Latitude' : np.round(lat120r    , 5)                 ,
-               'Transect' : np.ones(len(t120r  ), dtype=int)*transect,
-               'Miles'    : nm120r                                   ,
-               'Seabed'   : np.round(sbline120r , 1)                 ,
-               'NASC'     : np.round(NASC120swr , 2)                 ,
-               '% samples': np.round(pc120swr   , 1)                 }
-    results = pd.DataFrame(results, columns= ['Time'     , 'Longitude',
-                                              'Latitude' , 'Transect' ,
-                                              'Miles'    , 'Seabed'   ,
-                                              'NASC'     , '% samples'])
+    results_data = get_results(pro)
+    results = pd.DataFrame(results_data, columns= ['Time'     , 'Longitude',
+                                                   'Latitude' , 'Transect' ,
+                                                   'Miles'    , 'Seabed'   ,
+                                                   'NASC'     , '% samples'])
 
     # Create new log subdirectory
     if not os.path.exists(outputdir):
@@ -79,6 +76,16 @@ def log(pro, outputdir, savepng=True):
 
     # save png image
     if savepng:
+        rawfiles    = pro['rawfiles']
+        transect    = pro['transect']
+        t120        = pro['t120']
+        t120r       = pro['t120r']
+        t120intrvls = pro['t120intervals']
+        nm120r      = pro['nm120r']
+        r120        = pro['r120']
+        Sv120       = pro['Sv120']
+        Sv120sw     = pro['Sv120sw']
+        NASC120swr  = pro['NASC120swr'][0,:]
 
         # set figure
         plt.close()
